@@ -1,26 +1,86 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import * as React from 'react'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends React.Component {
+  state = {
+    missingWord: '',
+    isLoading: true,
+    books: []
+  }
+
+  inputValue = input => {
+    this.setState({
+      missingWord: input.target.value
+    })
+  }
+
+  submit = event => {
+    event.preventDefault()
+    this.fetchBooks()
+  }
+
+  fetchBooks = () => {
+    fetch('https://www.googleapis.com/books/v1/volumes?q=' + this.state.missingWord + '+inauthor')
+      .then(res => res.json())
+      .then(json => this.setState({ books: json.items }, this.checkFetch))
+  }
+
+  checkFetch = () => {
+    if (this.state.books !== undefined) {
+      this.setState({ isLoading: false })
+    }
+  }
+
+  printBooks = () => {
+    let titleImgDescription = []
+
+    if (this.state.books === undefined) {
+      return titleImgDescription
+    }
+
+    for (let i = 0; i < this.state.books.length; i++) {
+      let description = this.state.books[i].volumeInfo.description
+
+      if (description === undefined) {
+        description = 'missing description'
+      }
+
+      if (description.length > 100) {
+        description = description.substr(0, description.lastIndexOf(' ', 100))
+        description = description + '...'
+      }
+
+      titleImgDescription.push(
+        <div key={i}>
+          <h4>
+            Title:
+            <span className="title"> {this.state.books[i].volumeInfo.title}</span>
+          </h4>
+          {this.getImg(i)}
+          <h4 className="description">{description}</h4>
+        </div>
+      )
+    }
+
+    return titleImgDescription
+  }
+
+  getImg = i => {
+    if (this.state.books[i].volumeInfo.imageLinks === undefined) {
+      return <h4>Missing img</h4>
+    }
+    return <img alt="missing img" src={this.state.books[i].volumeInfo.imageLinks.thumbnail} />
+  }
+
+  render() {
+    return (
+      <main className="container">
+        <h1>STX NEXT challenge</h1>
+        <form className="input" onSubmit={this.submit}>
+          <input type="text" autoFocus placeholder="Title" onChange={this.inputValue} />
+          <button>Find</button>
+        </form>
+        {this.state.isLoading ? 'Write a title to find a book' : this.printBooks()}
+      </main>
+    )
+  }
 }
-
-export default App;
