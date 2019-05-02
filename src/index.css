@@ -30,3 +30,7 @@ body {
 .bookContainer {
     min-height: 400px;
 }
+
+.link {
+    color: white;
+}
