@@ -4,7 +4,24 @@ export default class App extends React.Component {
   state = {
     missingWord: '',
     isLoading: true,
-    books: []
+    books: [],
+    startIndex: 0
+  }
+
+  titleImgDescription = []
+
+  // infinity scroll (life circle methods)
+
+  componentDidMount() {
+    document.addEventListener('scroll', this.trackScrolling)
+  }
+
+  componentDidUpdate() {
+    document.addEventListener('scroll', this.trackScrolling)
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('scroll', this.trackScrolling)
   }
 
   inputChange = input => {
@@ -15,11 +32,16 @@ export default class App extends React.Component {
 
   submit = event => {
     event.preventDefault()
+    this.titleImgDescription = []
     this.fetchBooks()
   }
 
   fetchBooks = () => {
-    fetch(`https://www.googleapis.com/books/v1/volumes?q=${this.state.missingWord}+inauthor`)
+    fetch(
+      `https://www.googleapis.com/books/v1/volumes?q=${this.state.missingWord}+intitle&startIndex=${
+        this.state.startIndex
+      }`
+    )
       .then(res => res.json())
       .then(json => this.setState({ books: json.items }, this.checkFetch))
   }
@@ -31,10 +53,15 @@ export default class App extends React.Component {
   }
 
   printBooks = () => {
-    let titleImgDescription = []
-
     if (typeof this.state.books === 'undefined') {
-      return titleImgDescription
+      return this.titleImgDescription
+    }
+
+    if (this.state.startIndex > 0) {
+      let repeats = this.titleImgDescription.map(el => el.key === this.state.books[0].id)
+      if (repeats.includes(true)) {
+        return this.titleImgDescription
+      }
     }
 
     this.state.books.map(el => {
@@ -47,7 +74,7 @@ export default class App extends React.Component {
         description = description + '...'
       }
 
-      titleImgDescription.push(
+      this.titleImgDescription.push(
         <div key={el.id}>
           <h4>
             Title:
@@ -60,7 +87,7 @@ export default class App extends React.Component {
       return 1
     })
 
-    return titleImgDescription
+    return <div>{this.titleImgDescription}</div>
   }
 
   getImg = el => {
@@ -68,6 +95,29 @@ export default class App extends React.Component {
       return <h4>Missing img</h4>
     }
     return <img alt="missing img" src={el.volumeInfo.imageLinks.thumbnail} />
+  }
+
+  // infinity scroll (isBottom, trackScrolling)
+  isBottom(el) {
+    if (this.state.books.length < 10) {
+      return false
+    }
+    return el.getBoundingClientRect().bottom <= window.innerHeight
+  }
+
+  trackScrolling = () => {
+    let wrappedElement = document.getElementById('footer')
+    if (this.isBottom(wrappedElement)) {
+      let startIndex = this.state.startIndex
+      startIndex = startIndex + 10
+      this.setState(
+        {
+          startIndex: startIndex
+        },
+        this.fetchBooks
+      )
+      document.removeEventListener('scroll', this.trackScrolling)
+    }
   }
 
   render() {
@@ -78,7 +128,8 @@ export default class App extends React.Component {
           <input type="text" autoFocus placeholder="Title" onChange={this.inputChange} />
           <button>Find</button>
         </form>
-        {this.state.isLoading ? 'Write a title to find a book' : this.printBooks()}
+        {this.state.isLoading ? this.titleImgDescription : this.printBooks()}
+        <span id="footer" />
       </main>
     )
   }
