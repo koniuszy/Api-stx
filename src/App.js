@@ -7,7 +7,7 @@ export default class App extends React.Component {
     books: []
   }
 
-  inputValue = input => {
+  inputChange = input => {
     this.setState({
       missingWord: input.target.value
     })
@@ -19,13 +19,13 @@ export default class App extends React.Component {
   }
 
   fetchBooks = () => {
-    fetch('https://www.googleapis.com/books/v1/volumes?q=' + this.state.missingWord + '+inauthor')
+    fetch(`https://www.googleapis.com/books/v1/volumes?q=${this.state.missingWord}+inauthor`)
       .then(res => res.json())
       .then(json => this.setState({ books: json.items }, this.checkFetch))
   }
 
   checkFetch = () => {
-    if (this.state.books !== undefined) {
+    if (typeof this.state.books !== 'undefined') {
       this.setState({ isLoading: false })
     }
   }
@@ -33,42 +33,41 @@ export default class App extends React.Component {
   printBooks = () => {
     let titleImgDescription = []
 
-    if (this.state.books === undefined) {
+    if (typeof this.state.books === 'undefined') {
       return titleImgDescription
     }
 
-    for (let i = 0; i < this.state.books.length; i++) {
-      let description = this.state.books[i].volumeInfo.description
+    this.state.books.map(el => {
+      let description = el.volumeInfo.description
 
-      if (description === undefined) {
+      if (typeof description === 'undefined') {
         description = 'missing description'
-      }
-
-      if (description.length > 100) {
+      } else if (description.length > 100) {
         description = description.substr(0, description.lastIndexOf(' ', 100))
         description = description + '...'
       }
 
       titleImgDescription.push(
-        <div key={i}>
+        <div key={el.id}>
           <h4>
             Title:
-            <span className="title"> {this.state.books[i].volumeInfo.title}</span>
+            <span className="title"> {el.volumeInfo.title}</span>
           </h4>
-          {this.getImg(i)}
+          {this.getImg(el)}
           <h4 className="description">{description}</h4>
         </div>
       )
-    }
+      return 1
+    })
 
     return titleImgDescription
   }
 
-  getImg = i => {
-    if (this.state.books[i].volumeInfo.imageLinks === undefined) {
+  getImg = el => {
+    if (typeof el.volumeInfo.imageLinks === 'undefined') {
       return <h4>Missing img</h4>
     }
-    return <img alt="missing img" src={this.state.books[i].volumeInfo.imageLinks.thumbnail} />
+    return <img alt="missing img" src={el.volumeInfo.imageLinks.thumbnail} />
   }
 
   render() {
@@ -76,7 +75,7 @@ export default class App extends React.Component {
       <main className="container">
         <h1>STX NEXT challenge</h1>
         <form className="input" onSubmit={this.submit}>
-          <input type="text" autoFocus placeholder="Title" onChange={this.inputValue} />
+          <input type="text" autoFocus placeholder="Title" onChange={this.inputChange} />
           <button>Find</button>
         </form>
         {this.state.isLoading ? 'Write a title to find a book' : this.printBooks()}
