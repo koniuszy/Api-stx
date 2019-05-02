@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React, { useState } from 'react'
 
 export default class App extends React.Component {
   state = {
@@ -9,9 +9,9 @@ export default class App extends React.Component {
   }
 
   titleImgDescription = []
+  time
 
   // infinity scroll (life circle methods)
-
   componentDidMount() {
     document.addEventListener('scroll', this.trackScrolling)
   }
@@ -25,10 +25,17 @@ export default class App extends React.Component {
   }
 
   inputChange = input => {
+    clearTimeout(this.time)
     this.setState({
       missingWord: input.target.value
     })
+    this.time = setTimeout(() => {
+      this.titleImgDescription = []
+      this.fetchBooks()
+    }, 500)
   }
+
+  searchWithDelay = () => {}
 
   submit = event => {
     event.preventDefault()
@@ -57,11 +64,9 @@ export default class App extends React.Component {
       return this.titleImgDescription
     }
 
-    if (this.state.startIndex > 0) {
-      let repeats = this.titleImgDescription.map(el => el.key === this.state.books[0].id)
-      if (repeats.includes(true)) {
-        return this.titleImgDescription
-      }
+    let repeats = this.titleImgDescription.map(el => el.key === this.state.books[0].id)
+    if (repeats.includes(true)) {
+      return this.titleImgDescription
     }
 
     this.state.books.map(el => {
@@ -75,7 +80,7 @@ export default class App extends React.Component {
       }
 
       this.titleImgDescription.push(
-        <div key={el.id}>
+        <div className="bookContainer" key={el.id}>
           <h4>
             Title:
             <span className="title"> {el.volumeInfo.title}</span>
@@ -123,10 +128,10 @@ export default class App extends React.Component {
   render() {
     return (
       <main className="container">
-        <h1>STX NEXT challenge</h1>
+        <h1>Type the title of a book to search Google's database </h1>
         <form className="input" onSubmit={this.submit}>
           <input type="text" autoFocus placeholder="Title" onChange={this.inputChange} />
-          <button>Find</button>
+          <button>Search</button>
         </form>
         {this.state.isLoading ? this.titleImgDescription : this.printBooks()}
         <span id="footer" />

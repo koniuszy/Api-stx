@@ -25,5 +25,8 @@ body {
 
 .description {
     font-weight: normal;
-    margin-bottom: 150px;
+}
+
+.bookContainer {
+    min-height: 400px;
 }
