@@ -16,10 +16,6 @@ export default class Books extends React.Component {
     document.addEventListener('scroll', this.trackScrolling)
   }
 
-  componentDidUpdate() {
-    document.addEventListener('scroll', this.trackScrolling)
-  }
-
   componentWillUnmount() {
     document.removeEventListener('scroll', this.trackScrolling)
   }
@@ -34,8 +30,6 @@ export default class Books extends React.Component {
       this.fetchBooks()
     }, 500)
   }
-
-  searchWithDelay = () => {}
 
   submit = event => {
     event.preventDefault()
@@ -114,7 +108,7 @@ export default class Books extends React.Component {
     let wrappedElement = document.getElementById('footer')
     if (this.isBottom(wrappedElement)) {
       let startIndex = this.state.startIndex
-      startIndex = startIndex + 10
+      startIndex += 10
       this.setState(
         {
           startIndex: startIndex
