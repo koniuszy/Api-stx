@@ -5,7 +5,7 @@ export default class Books extends React.Component {
     missingWord: '',
     isLoading: true,
     books: [],
-    startIndex: 0
+    startIndex: 0,
   }
 
   titleImgDescription = []
@@ -16,6 +16,7 @@ export default class Books extends React.Component {
     document.addEventListener('scroll', this.trackScrolling)
   }
 
+  // I do not think you should to add event listener here as well
   componentDidUpdate() {
     document.addEventListener('scroll', this.trackScrolling)
   }
@@ -27,7 +28,7 @@ export default class Books extends React.Component {
   inputChange = input => {
     clearTimeout(this.time)
     this.setState({
-      missingWord: input.target.value
+      missingWord: input.target.value,
     })
     this.time = setTimeout(() => {
       this.titleImgDescription = []
@@ -35,6 +36,7 @@ export default class Books extends React.Component {
     }, 500)
   }
 
+  // ????
   searchWithDelay = () => {}
 
   submit = event => {
@@ -114,13 +116,15 @@ export default class Books extends React.Component {
     let wrappedElement = document.getElementById('footer')
     if (this.isBottom(wrappedElement)) {
       let startIndex = this.state.startIndex
+      // startIndex += 10
       startIndex = startIndex + 10
       this.setState(
         {
-          startIndex: startIndex
+          startIndex: startIndex,
         },
         this.fetchBooks
       )
+      // Do net remove event listener here and do not add in componentDidUpdate
       document.removeEventListener('scroll', this.trackScrolling)
     }
   }
